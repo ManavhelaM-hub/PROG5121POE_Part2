@@ -15,10 +15,9 @@ private static Login loginSystem;
     private static Message messageSystem;
     private static Scanner scanner;
     private static int numMessages;
-
-
-    public static void main(String[] args) throws JSONException {
-      scanner = new Scanner(System.in);
+    
+    public static void main(String[] args) {
+        scanner = new Scanner(System.in);
         loginSystem = new Login();
         messageSystem = new Message();
         
@@ -27,7 +26,7 @@ private static Login loginSystem;
         System.out.println("=".repeat(60));
         System.out.println();
         
-        // Load any existing messages from JSON
+        // Load any existing messages
         System.out.println(messageSystem.loadMessagesFromJSON("messages.json"));
         System.out.println();
         
@@ -48,7 +47,7 @@ private static Login loginSystem;
         // Ask how many messages they want to enter
         System.out.print("\nHow many messages would you like to compose? ");
         numMessages = scanner.nextInt();
-        scanner.nextLine(); // consume newline
+        scanner.nextLine();
         
         // Main application menu
         runMessagingApp();
@@ -57,10 +56,6 @@ private static Login loginSystem;
         System.out.println("\nThank you for using QuickChat!");
     }
     
-    /**
-     * Perform user registration
-     * @return true if registration successful, false otherwise
-     */
     private static boolean performRegistration() {
         System.out.println("REGISTRATION REQUIREMENTS:");
         System.out.println("-".repeat(50));
@@ -83,7 +78,7 @@ private static Login loginSystem;
             System.out.print("Enter username: ");
             username = scanner.nextLine();
             if (!loginSystem.checkUserName(username)) {
-                System.out.println(" Username must contain '_' and be ≤ 5 characters");
+                System.out.println("❌ Username must contain '_' and be ≤ 5 characters");
             } else {
                 usernameValid = true;
             }
@@ -95,7 +90,7 @@ private static Login loginSystem;
             System.out.print("Enter password: ");
             password = scanner.nextLine();
             if (!loginSystem.checkPasswordComplexity(password)) {
-                System.out.println(" Password must have 8+ chars, 1 capital, 1 number, 1 special char");
+                System.out.println("❌ Password must have 8+ chars, 1 capital, 1 number, 1 special char");
             } else {
                 passwordValid = true;
             }
@@ -107,7 +102,7 @@ private static Login loginSystem;
             System.out.print("Enter SA cell number (+27xxxxxxxxx): ");
             phoneNumber = scanner.nextLine();
             if (!loginSystem.checkCellPhoneNumber(phoneNumber)) {
-                System.out.println(" Must start with +27 followed by 9 digits");
+                System.out.println("❌ Must start with +27 followed by 9 digits");
             } else {
                 phoneValid = true;
             }
@@ -119,10 +114,6 @@ private static Login loginSystem;
         return registrationResult.equals("User successfully registered!");
     }
     
-    /**
-     * Perform user login
-     * @return true if login successful, false otherwise
-     */
     private static boolean performLogin() {
         System.out.println("\n" + "=".repeat(60));
         System.out.println("     LOGIN TO YOUR ACCOUNT");
@@ -148,10 +139,7 @@ private static Login loginSystem;
         return false;
     }
     
-    /**
-     * Run the main messaging application
-     */
-    private static void runMessagingApp() throws JSONException {
+    private static void runMessagingApp() {
         boolean running = true;
         
         while (running) {
@@ -160,34 +148,34 @@ private static Login loginSystem;
             System.out.println("=".repeat(50));
             System.out.println("1. Send Messages");
             System.out.println("2. Show recently sent messages");
-            System.out.println("3. Quit");
-            System.out.print("\nChoose option (1-3): ");
+            System.out.println("3. Stored Messages Management");
+            System.out.println("4. Quit");
+            System.out.print("\nChoose option (1-4): ");
             
             int choice = scanner.nextInt();
-            scanner.nextLine(); // consume newline
+            scanner.nextLine();
             
             switch (choice) {
                 case 1:
                     sendMessages();
                     break;
                 case 2:
-                    System.out.println("\n🔜 Coming Soon. This feature is still in development.");
+                    displaySentMessages();
                     break;
                 case 3:
-                    // Save messages to JSON before quitting
+                    storedMessagesMenu();
+                    break;
+                case 4:
                     System.out.println("\n" + messageSystem.storeMessagesInJSON("messages.json"));
                     System.out.println(messageSystem.getTotalMessagesDisplay());
                     running = false;
                     break;
                 default:
-                    System.out.println("Invalid option. Please choose 1, 2, or 3.");
+                    System.out.println("Invalid option. Please choose 1, 2, 3, or 4.");
             }
         }
     }
     
-    /**
-     * Send multiple messages based on user-defined count
-     */
     private static void sendMessages() {
         System.out.println("\n" + "=".repeat(50));
         System.out.println("     SEND MESSAGES");
@@ -203,5 +191,79 @@ private static Login loginSystem;
         System.out.println("\n" + messageSystem.getTotalMessagesDisplay());
         System.out.println("\n✓ All messages processed!");
     }
-
+    
+    private static void displaySentMessages() {
+        System.out.println("\n" + "=".repeat(50));
+        System.out.println("     SENT MESSAGES");
+        System.out.println("=".repeat(50));
+        
+        var sentMessages = messageSystem.getSentMessages();
+        if (sentMessages.isEmpty()) {
+            System.out.println("No messages have been sent yet.");
+        } else {
+            for (var msg : sentMessages) {
+                System.out.println("\nMessage ID: " + msg.getMessageID());
+                System.out.println("To: " + msg.getRecipient());
+                System.out.println("Message: " + msg.getMessageText());
+                System.out.println("Hash: " + msg.getMessageHash());
+                System.out.println("-".repeat(40));
+            }
+        }
+    }
+    
+    /**
+     * PART 3: Stored Messages Management Menu
+     */
+    private static void storedMessagesMenu() {
+        boolean backToMain = false;
+        
+        while (!backToMain) {
+            System.out.println("\n" + "=".repeat(50));
+            System.out.println("     STORED MESSAGES MANAGEMENT");
+            System.out.println("=".repeat(50));
+            System.out.println("1. Display sender and recipient of all stored messages");
+            System.out.println("2. Display the longest stored message");
+            System.out.println("3. Search for a message by ID");
+            System.out.println("4. Search all messages for a particular recipient");
+            System.out.println("5. Delete a message using message hash");
+            System.out.println("6. Display full report of all stored messages");
+            System.out.println("7. Back to Main Menu");
+            System.out.print("\nChoose option (1-7): ");
+            
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+            
+            switch (choice) {
+                case 1:
+                    System.out.println(messageSystem.displayStoredMessagesSenderRecipient());
+                    break;
+                case 2:
+                    System.out.println("\n" + messageSystem.displayLongestStoredMessage());
+                    break;
+                case 3:
+                    System.out.print("Enter Message ID to search: ");
+                    String msgID = scanner.nextLine();
+                    System.out.println("\n" + messageSystem.searchByMessageID(msgID));
+                    break;
+                case 4:
+                    System.out.print("Enter recipient number (e.g., +27838884567): ");
+                    String recipient = scanner.nextLine();
+                    System.out.println("\n" + messageSystem.searchByRecipient(recipient));
+                    break;
+                case 5:
+                    System.out.print("Enter Message Hash to delete: ");
+                    String hash = scanner.nextLine();
+                    System.out.println("\n" + messageSystem.deleteMessageByHash(hash));
+                    break;
+                case 6:
+                    System.out.println(messageSystem.displayFullReport());
+                    break;
+                case 7:
+                    backToMain = true;
+                    break;
+                default:
+                    System.out.println("Invalid option. Please choose 1-7.");
+            }
+        }
+    }
 }
