@@ -9,7 +9,7 @@ import static org.junit.Assert.*;
 
 /**
  * Unit tests for Part 3 functionality
- * @author Your Name
+
  * @version 3.0
  */
 public class MessageTestPart3 {
